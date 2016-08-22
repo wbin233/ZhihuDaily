@@ -27,4 +27,13 @@ public class Network {
         }
         return zhihuApi;
     }
+
+    public static ZhihuApi getZhihuApi2() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://news-at.zhihu.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build();
+        return retrofit.create(ZhihuApi.class);
+    }
 }

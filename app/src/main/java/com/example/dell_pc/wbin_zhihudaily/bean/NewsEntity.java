@@ -1,7 +1,6 @@
 package com.example.dell_pc.wbin_zhihudaily.bean;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by wbin on 2016/8/22.
@@ -9,7 +8,7 @@ import java.util.List;
 public class NewsEntity {
     private String date;
     private ArrayList<StoryEntity> stories;
-    private List<TopStoryEntity> top_stories;
+    private ArrayList<TopStoryEntity> top_stories;
 
     public String getDate() {
         return date;
@@ -27,11 +26,11 @@ public class NewsEntity {
         this.stories = stories;
     }
 
-    public List<TopStoryEntity> getTop_stories() {
+    public ArrayList<TopStoryEntity> getTop_stories() {
         return top_stories;
     }
 
-    public void setTop_stories(List<TopStoryEntity> top_stories) {
+    public void setTop_stories(ArrayList<TopStoryEntity> top_stories) {
         this.top_stories = top_stories;
     }
 }

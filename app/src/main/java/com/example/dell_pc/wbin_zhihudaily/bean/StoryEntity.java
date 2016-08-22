@@ -12,6 +12,8 @@ public class StoryEntity {
     private String title;
     private List<String> images;
     private boolean isRead = false;
+    private String date;
+    private boolean isTop=false;
 
     public int getType() {
         return type;
@@ -59,5 +61,21 @@ public class StoryEntity {
 
     public void setRead(boolean read) {
         isRead = read;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public boolean isTop() {
+        return isTop;
+    }
+
+    public void setTop(boolean top) {
+        isTop = top;
     }
 }
