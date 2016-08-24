@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        getFragmentManager().beginTransaction().replace(R.id.frame_layout, new MainFragment()).commit();
     }
 
     @Override

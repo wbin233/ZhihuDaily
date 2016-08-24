@@ -80,7 +80,6 @@ public class StoryActivity extends AppCompatActivity {
                 .subscribe(new Subscriber<String>() {
                     @Override
                     public void onCompleted() {
-                        Toast.makeText(StoryActivity.this, "completed!", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

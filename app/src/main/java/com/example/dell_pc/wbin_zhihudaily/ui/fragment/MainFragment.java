@@ -21,6 +21,7 @@ import com.example.dell_pc.wbin_zhihudaily.bean.StoryEntity;
 import com.example.dell_pc.wbin_zhihudaily.bean.TopStoryEntity;
 import com.example.dell_pc.wbin_zhihudaily.network.Network;
 import com.example.dell_pc.wbin_zhihudaily.ui.activity.StoryActivity;
+import com.example.dell_pc.wbin_zhihudaily.util.DateUtil;
 
 import java.util.ArrayList;
 
@@ -43,36 +44,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     MainAdapter adapter = new MainAdapter();
     public static ArrayList<TopStoryEntity> topStoryEntities;   //热门新闻
     boolean state = true;     //状态，为true表示获取今日要闻或刷新，为false表示获取往期消息
-
-    Subscriber subscriber = new Subscriber<NewsEntity>() {
-        @Override
-        public void onCompleted() {
-            Toast.makeText(getActivity(), "完成!!", Toast.LENGTH_SHORT).show();
-            swipeRefreshLayout.setRefreshing(false);
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            Log.e(MainFragment.class.toString(), e.toString());
-            Toast.makeText(getActivity(), "加载失败", Toast.LENGTH_SHORT).show();
-            swipeRefreshLayout.setRefreshing(false);
-        }
-
-        @Override
-        public void onNext(NewsEntity newsEntity) {
-            Log.e(MainFragment.class.toString(), "on next!!");
-            String date = newsEntity.getDate();
-            for (StoryEntity storyEntity : newsEntity.getStories()) {
-                storyEntity.setDate(date);
-            }
-            if (state) {
-                topStoryEntities = newsEntity.getTop_stories();
-                adapter.setList(newsEntity.getStories());
-            } else {
-                adapter.appendList(newsEntity.getStories());
-            }
-        }
-    };
+    boolean isLoading = false;      //是否在加载新的数据[下拉加载更多]
 
     @Nullable
     @Override
@@ -84,7 +56,26 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         swipeRefreshLayout.setRefreshing(false);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+
+        //下拉加载更多
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+                int totalItemCount = layoutManager.getItemCount();
+                if (lastVisibleItemPosition >= totalItemCount - 2 && dy > 0) {      //底部剩余两个未显示时加载新的数据
+                    if (!isLoading) {
+                        isLoading = true;
+                        loadHistoryData();
+                    }
+                }
+            }
+        });
+
         adapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, StoryEntity storyEntity) {
@@ -102,28 +93,71 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         return view;
     }
 
+    /**
+     * 加载最新信息
+     */
     private void loadData() {
+        state = true;
         Network.getZhihuApi()
                 .getLatestNews()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(subscriber);
+                .subscribe(getSubscriber());
     }
 
+    /**
+     * 加载往期信息
+     */
     private void loadHistoryData() {
         Log.e(MainFragment.class.toString(), "loadHistoryData!!!");
         state = false;
+        DateUtil.subDate();
         Network.getZhihuApi2()
-                .getLatestNews()
+                .getBeforeNews(DateUtil.getDate())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(subscriber);
+                .subscribe(getSubscriber());
     }
 
     @Override
     public void onRefresh() {
         Log.e(MainFragment.class.toString(), "刷新！！！！！！！");
         state = true;
-        loadHistoryData();
+        loadData();
+    }
+
+    //subscriber不能重用[onCompleted后会取消订阅],故每次都要重新new一个
+    private Subscriber<NewsEntity> getSubscriber() {
+        return new Subscriber<NewsEntity>() {
+            @Override
+            public void onCompleted() {
+                swipeRefreshLayout.setRefreshing(false);
+                isLoading = false;
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(MainFragment.class.toString(), e.toString());
+                Toast.makeText(getActivity(), "加载失败", Toast.LENGTH_SHORT).show();
+                swipeRefreshLayout.setRefreshing(false);
+                isLoading = false;
+            }
+
+            @Override
+            public void onNext(NewsEntity newsEntity) {
+                Log.e(MainFragment.class.toString(), "on next!!");
+                String date = newsEntity.getDate();
+                for (StoryEntity storyEntity : newsEntity.getStories()) {
+                    storyEntity.setDate(date);
+                }
+                if (state) {
+                    DateUtil.setCalendar(date);
+                    topStoryEntities = newsEntity.getTop_stories();
+                    adapter.setList(newsEntity.getStories());
+                } else {
+                    adapter.appendList(newsEntity.getStories());
+                }
+            }
+        };
     }
 }
