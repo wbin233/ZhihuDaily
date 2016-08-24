@@ -1,11 +1,14 @@
 package com.example.dell_pc.wbin_zhihudaily.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 /**
  * Created by wbin on 2016/8/22.
  */
-public class StoryEntity {
+public class StoryEntity implements Parcelable {
     private int type;
     private int id;
     private String ga_prefix;
@@ -78,4 +81,48 @@ public class StoryEntity {
     public void setTop(boolean top) {
         isTop = top;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.type);
+        dest.writeInt(this.id);
+        dest.writeString(this.ga_prefix);
+        dest.writeString(this.title);
+        dest.writeStringList(this.images);
+        dest.writeByte(this.isRead ? (byte) 1 : (byte) 0);
+        dest.writeString(this.date);
+        dest.writeByte(this.isTop ? (byte) 1 : (byte) 0);
+    }
+
+    public StoryEntity() {
+    }
+
+    protected StoryEntity(Parcel in) {
+        this.type = in.readInt();
+        this.id = in.readInt();
+        this.ga_prefix = in.readString();
+        this.title = in.readString();
+        this.images = in.createStringArrayList();
+        this.isRead = in.readByte() != 0;
+        this.date = in.readString();
+        this.isTop = in.readByte() != 0;
+    }
+
+    public static final Parcelable.Creator<StoryEntity> CREATOR = new Parcelable.Creator<StoryEntity>() {
+        @Override
+        public StoryEntity createFromParcel(Parcel source) {
+            return new StoryEntity(source);
+        }
+
+        @Override
+        public StoryEntity[] newArray(int size) {
+            return new StoryEntity[size];
+        }
+    };
 }

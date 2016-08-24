@@ -31,6 +31,16 @@ public class MainAdapter extends RecyclerView.Adapter {
 
     List<StoryEntity> list;
 
+    public interface OnItemClickListener {
+        void onItemClick(View view, StoryEntity storyEntity);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    private OnItemClickListener onItemClickListener;
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
@@ -47,8 +57,8 @@ public class MainAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        StoryEntity item = list.get(position);
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
+        final StoryEntity item = list.get(position);
         if (holder instanceof HeaderHolder) {
             ((HeaderHolder) holder).banner.setBannerStyle(BannerConfig.CIRCLE_INDICATOR_TITLE);
             List<String> titleList = new ArrayList<>();
@@ -66,6 +76,30 @@ public class MainAdapter extends RecyclerView.Adapter {
         } else {
             ((MainHolder) holder).textView.setText(item.getTitle());
             Glide.with(holder.itemView.getContext()).load(item.getImages().get(0)).into(((MainHolder) holder).imgView);
+        }
+        if(position==0){
+            ((HeaderHolder)holder).banner.setOnBannerClickListener(new Banner.OnBannerClickListener() {
+                @Override
+                public void OnBannerClick(View view, int position) {    //下标是从1开始的
+                    TopStoryEntity topStoryEntity=MainFragment.topStoryEntities.get(position-1);
+                    int key=0;
+                    for(int i=1;i<list.size();i++){
+                        if(list.get(i).getId()==topStoryEntity.getId()){
+                            key=i;
+                            break;
+                        }
+                    }
+                    onItemClickListener.onItemClick(view,list.get(key));
+                }
+            });
+        }
+        else if (onItemClickListener != null) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClickListener.onItemClick(holder.itemView, item);
+                }
+            });
         }
     }
 

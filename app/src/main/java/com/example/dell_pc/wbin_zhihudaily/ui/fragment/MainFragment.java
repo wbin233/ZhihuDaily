@@ -1,6 +1,7 @@
 package com.example.dell_pc.wbin_zhihudaily.ui.fragment;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import com.example.dell_pc.wbin_zhihudaily.bean.NewsEntity;
 import com.example.dell_pc.wbin_zhihudaily.bean.StoryEntity;
 import com.example.dell_pc.wbin_zhihudaily.bean.TopStoryEntity;
 import com.example.dell_pc.wbin_zhihudaily.network.Network;
+import com.example.dell_pc.wbin_zhihudaily.ui.activity.StoryActivity;
 
 import java.util.ArrayList;
 
@@ -51,6 +53,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         @Override
         public void onError(Throwable e) {
+            Log.e(MainFragment.class.toString(), e.toString());
             Toast.makeText(getActivity(), "加载失败", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
         }
@@ -82,6 +85,17 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         swipeRefreshLayout.setOnRefreshListener(this);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        adapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, StoryEntity storyEntity) {
+                Intent intent = new Intent(getActivity(), StoryActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(StoryEntity.class.toString(), storyEntity);
+                intent.putExtras(bundle);
+                getActivity().startActivity(intent);
+            }
+        });
+
         recyclerView.setAdapter(adapter);
         state = true;
         loadData();
